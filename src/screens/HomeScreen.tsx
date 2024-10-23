@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, Button, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, Button, ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import useQuranData from '../hooks/useQuranData';
 import axios from 'axios';
 
 const HomeScreen = () => {
   const { data, loading } = useQuranData('https://api.alquran.cloud/v1/surah');
   const [verses, setVerses] = useState([]);
-  const [selectedSurah, setSelectedSurah] = useState(null);
+  const [selectedSurah, setSelectedSurah] = useState<number | null>(null);
 
   const fetchSurahVerses = async (surahId: number) => {
     try {
@@ -19,7 +19,7 @@ const HomeScreen = () => {
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.container}>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
@@ -28,17 +28,20 @@ const HomeScreen = () => {
             data={data}
             keyExtractor={(item) => item.number.toString()}
             renderItem={({ item }) => (
-              <Button
-                title={item.englishName}
-                onPress={() => fetchSurahVerses(item.number)}
-              />
+              <View style={styles.surahItem}>
+                <Button
+                  title={item.englishName}
+                  onPress={() => fetchSurahVerses(item.number)}
+                  color="#841584"
+                />
+              </View>
             )}
           />
           {selectedSurah && (
-            <View>
-              <Text>Verses of Surah {selectedSurah}</Text>
-              {verses.map((verse, index) => (
-                <Text key={index}>{verse.text}</Text>
+            <View style={styles.versesContainer}>
+              <Text style={styles.versesTitle}>Verses of Surah {selectedSurah}</Text>
+              {verses.map((verse: { text: string }, index) => (
+                <Text key={index} style={styles.verseText}>{verse.text}</Text>
               ))}
             </View>
           )}
@@ -47,5 +50,27 @@ const HomeScreen = () => {
     </ScrollView>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  surahItem: {
+    marginVertical: 5,
+  },
+  versesContainer: {
+    marginTop: 20,
+  },
+  versesTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  verseText: {
+    marginVertical: 5,
+    fontSize: 16,
+    lineHeight: 22,
+  },
+});
 
 export default HomeScreen;
